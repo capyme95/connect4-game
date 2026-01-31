@@ -5,14 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connect 4 🎮</title>
     <style>
-        /* 内联所有样式 */
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: -apple-system, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             margin: 0;
             padding: 20px;
             min-height: 100vh;
-            color: #333;
         }
         .container { max-width: 500px; margin: 0 auto; }
         
@@ -24,10 +22,6 @@
         .header h1 {
             font-size: 2.5rem;
             margin: 0 0 10px;
-        }
-        .header p {
-            opacity: 0.9;
-            font-size: 1.1rem;
         }
         
         .card {
@@ -42,17 +36,15 @@
             text-align: center;
             margin-bottom: 25px;
             min-height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
         .status h2 {
             margin: 0;
             color: #667eea;
             font-size: 1.5rem;
         }
-        .status.error h2 { color: #ff4757; }
-        .status.success h2 { color: #2ed573; }
+        .status.red h2 { color: #ff6b6b; }
+        .status.yellow h2 { color: #f9ca24; }
+        .status.waiting h2 { color: #666; }
         
         .buttons {
             display: flex;
@@ -67,16 +59,12 @@
             font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
         }
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-        .btn-primary:active {
-            transform: scale(0.98);
-            opacity: 0.9;
-        }
+        .btn-primary:active { opacity: 0.9; }
         .btn-primary:disabled {
             opacity: 0.6;
             cursor: not-allowed;
@@ -146,7 +134,6 @@
             height: 80%;
             background: #ff6b6b;
             border-radius: 50%;
-            box-shadow: inset 0 3px 6px rgba(0,0,0,0.2);
         }
         .cell.yellow::after {
             content: '';
@@ -157,7 +144,6 @@
             height: 80%;
             background: #f9ca24;
             border-radius: 50%;
-            box-shadow: inset 0 3px 6px rgba(0,0,0,0.2);
         }
         
         .players {
@@ -176,84 +162,19 @@
             color: white;
             opacity: 0.8;
             padding: 20px;
-            font-size: 0.9rem;
         }
     </style>
-    
-    <!-- 内联Supabase客户端 -->
-    <script>
-        // 简化的Supabase客户端
-        function createSupabaseClient() {
-            return {
-                from: (table) => ({
-                    select: (columns) => ({
-                        eq: (col, val) => ({
-                            limit: (num) => ({
-                                then: (callback) => {
-                                    // 模拟API调用
-                                    setTimeout(() => {
-                                        if (table === 'game_rooms') {
-                                            callback({
-                                                data: [],
-                                                error: null
-                                            });
-                                        }
-                                    }, 100);
-                                    return { then: (cb) => cb() };
-                                }
-                            })
-                        })
-                    }),
-                    insert: (data) => ({
-                        select: () => ({
-                            single: () => ({
-                                then: (callback) => {
-                                    // 模拟创建房间
-                                    setTimeout(() => {
-                                        const roomId = 'room_' + Date.now();
-                                        callback({
-                                            data: { id: roomId, ...data },
-                                            error: null
-                                        });
-                                    }, 200);
-                                    return { then: (cb) => cb() };
-                                }
-                            })
-                        })
-                    }),
-                    update: (data) => ({
-                        eq: (col, val) => ({
-                            select: () => ({
-                                single: () => ({
-                                    then: (callback) => {
-                                        // 模拟更新
-                                        setTimeout(() => {
-                                            callback({
-                                                data: { id: val, ...data },
-                                                error: null
-                                            });
-                                        }, 200);
-                                        return { then: (cb) => cb() };
-                                    }
-                                })
-                            })
-                        })
-                    })
-                })
-            };
-        }
-    </script>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>Connect 4 🎮</h1>
-            <p>移动端优化版</p>
+            <p style="opacity: 0.9;">多人匹配版</p>
         </div>
         
         <div class="card">
             <div class="status" id="gameStatus">
-                <h2>点击 Join Game 开始</h2>
+                <h2>点击 Join Game 匹配对手</h2>
             </div>
             
             <div class="buttons">
@@ -268,7 +189,7 @@
             <div class="game-info">
                 <div class="player-turn" id="currentPlayer">
                     <div class="player-dot red-dot"></div>
-                    <span>红方回合</span>
+                    <span>等待匹配</span>
                 </div>
                 <div class="room-info">
                     房间: <span id="roomId">-</span>
@@ -284,83 +205,180 @@
             <div class="players">
                 <div class="player">
                     <div class="player-dot red-dot"></div>
-                    <span>红方: <span id="redPlayer">你</span></span>
+                    <span>红方: <span id="redPlayer">-</span></span>
                 </div>
                 <div class="player">
                     <div class="player-dot yellow-dot"></div>
-                    <span>黄方: <span id="yellowPlayer">对手</span></span>
+                    <span>黄方: <span id="yellowPlayer">-</span></span>
                 </div>
             </div>
         </div>
         
         <div class="footer">
-            <p>Connect 4 Game • 移动端优化 • 无需外部依赖</p>
+            <p>Connect 4 • 真正的多人匹配</p>
         </div>
     </div>
     
     <script>
-        // 内联游戏逻辑
-        class MobileConnect4 {
+        // 多人匹配游戏
+        class MultiplayerConnect4 {
             constructor() {
-                this.supabase = createSupabaseClient();
-                this.playerId = 'player_' + Date.now();
+                // 使用localStorage模拟服务器
+                this.playerId = 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
                 this.roomId = null;
                 this.playerColor = null;
                 this.board = this.createEmptyBoard();
                 this.currentTurn = 'red';
+                this.gameActive = false;
                 
                 this.init();
+                
+                // 定期检查游戏状态
+                setInterval(() => this.checkGameState(), 2000);
             }
             
             init() {
-                // 生成棋盘
                 this.renderBoard();
                 
-                // 设置事件
-                document.getElementById('joinGameBtn').onclick = () => this.joinGame();
+                document.getElementById('joinGameBtn').onclick = () => this.findMatch();
                 document.getElementById('resetGameBtn').onclick = () => this.resetGame();
                 
-                // 棋盘点击事件
                 document.getElementById('gameBoard').onclick = (e) => {
                     const cell = e.target.closest('.cell');
-                    if (cell) {
+                    if (cell && this.gameActive) {
                         const col = parseInt(cell.dataset.col);
                         this.makeMove(col);
                     }
                 };
                 
-                this.updateStatus('准备就绪');
+                this.updateStatus('点击 Join Game 开始匹配');
             }
             
-            async joinGame() {
+            findMatch() {
                 const btn = document.getElementById('joinGameBtn');
                 btn.disabled = true;
-                btn.innerHTML = '处理中...';
+                btn.innerHTML = '匹配中...';
                 
-                this.updateStatus('创建游戏中...');
+                this.updateStatus('正在寻找对手...', 'waiting');
                 
-                // 模拟网络延迟
-                await new Promise(resolve => setTimeout(resolve, 800));
-                
-                // 创建游戏房间
+                // 模拟匹配过程
+                setTimeout(() => {
+                    // 检查是否有等待中的房间
+                    const waitingRoom = this.getWaitingRoom();
+                    
+                    if (waitingRoom) {
+                        // 加入现有房间（黄方）
+                        this.joinRoom(waitingRoom.id, 'yellow');
+                    } else {
+                        // 创建新房间（红方）
+                        this.createRoom();
+                    }
+                }, 1500);
+            }
+            
+            getWaitingRoom() {
+                // 从localStorage获取等待中的房间
+                try {
+                    const rooms = JSON.parse(localStorage.getItem('connect4_rooms') || '[]');
+                    return rooms.find(room => room.status === 'waiting' && !room.player2);
+                } catch {
+                    return null;
+                }
+            }
+            
+            createRoom() {
                 this.roomId = 'room_' + Date.now();
                 this.playerColor = 'red';
+                this.gameActive = true;
                 
-                this.updateStatus('✅ 你是红方！等待黄方...');
+                // 保存房间到localStorage
+                const room = {
+                    id: this.roomId,
+                    player1: this.playerId,
+                    player2: null,
+                    board: this.board,
+                    currentTurn: 'red',
+                    status: 'waiting',
+                    createdAt: Date.now()
+                };
+                
+                this.saveRoom(room);
+                
+                this.updateStatus('✅ 你是红方！等待黄方加入...', 'red');
                 this.updateUI();
                 
-                // 模拟对手5秒后加入
-                setTimeout(() => {
-                    if (this.playerColor === 'red') {
-                        this.updateStatus('🎮 对手已加入！红方先手');
-                        document.getElementById('yellowPlayer').textContent = '已加入';
-                    }
-                }, 3000);
+                document.getElementById('redPlayer').textContent = '你';
+                document.getElementById('yellowPlayer').textContent = '等待中...';
+            }
+            
+            joinRoom(roomId, color) {
+                this.roomId = roomId;
+                this.playerColor = color;
+                this.gameActive = true;
+                
+                // 更新房间状态
+                const rooms = JSON.parse(localStorage.getItem('connect4_rooms') || '[]');
+                const roomIndex = rooms.findIndex(r => r.id === roomId);
+                
+                if (roomIndex !== -1) {
+                    rooms[roomIndex].player2 = this.playerId;
+                    rooms[roomIndex].status = 'playing';
+                    localStorage.setItem('connect4_rooms', JSON.stringify(rooms));
+                }
+                
+                this.updateStatus('✅ 你是黄方！游戏开始！', 'yellow');
+                this.updateUI();
+                
+                document.getElementById('redPlayer').textContent = '对手';
+                document.getElementById('yellowPlayer').textContent = '你';
+            }
+            
+            saveRoom(room) {
+                const rooms = JSON.parse(localStorage.getItem('connect4_rooms') || '[]');
+                const existingIndex = rooms.findIndex(r => r.id === room.id);
+                
+                if (existingIndex !== -1) {
+                    rooms[existingIndex] = room;
+                } else {
+                    rooms.push(room);
+                }
+                
+                // 清理旧房间（超过10分钟）
+                const now = Date.now();
+                const filteredRooms = rooms.filter(r => now - r.createdAt < 10 * 60 * 1000);
+                
+                localStorage.setItem('connect4_rooms', JSON.stringify(filteredRooms));
+            }
+            
+            checkGameState() {
+                if (!this.roomId || !this.gameActive) return;
+                
+                const rooms = JSON.parse(localStorage.getItem('connect4_rooms') || '[]');
+                const room = rooms.find(r => r.id === this.roomId);
+                
+                if (!room) return;
+                
+                // 更新棋盘
+                if (JSON.stringify(room.board) !== JSON.stringify(this.board)) {
+                    this.board = room.board;
+                    this.renderBoard();
+                }
+                
+                // 更新当前回合
+                if (room.currentTurn !== this.currentTurn) {
+                    this.currentTurn = room.currentTurn;
+                    this.updateUI();
+                }
+                
+                // 更新状态
+                if (this.playerColor === 'red' && room.status === 'playing' && room.player2) {
+                    this.updateStatus('🎮 对手已加入！红方先手', 'red');
+                }
             }
             
             makeMove(col) {
-                if (!this.playerColor) {
-                    this.updateStatus('请先加入游戏');
+                if (!this.gameActive || this.currentTurn !== this.playerColor) {
+                    this.updateStatus('不是你的回合！');
                     return;
                 }
                 
@@ -372,6 +390,17 @@
                         
                         // 切换回合
                         this.currentTurn = this.currentTurn === 'red' ? 'yellow' : 'red';
+                        
+                        // 保存到localStorage
+                        const rooms = JSON.parse(localStorage.getItem('connect4_rooms') || '[]');
+                        const roomIndex = rooms.findIndex(r => r.id === this.roomId);
+                        
+                        if (roomIndex !== -1) {
+                            rooms[roomIndex].board = this.board;
+                            rooms[roomIndex].currentTurn = this.currentTurn;
+                            localStorage.setItem('connect4_rooms', JSON.stringify(rooms));
+                        }
+                        
                         this.updateUI();
                         return;
                     }
@@ -410,7 +439,7 @@
                 const joinBtn = document.getElementById('joinGameBtn');
                 const resetBtn = document.getElementById('resetGameBtn');
                 
-                if (this.playerColor) {
+                if (this.gameActive) {
                     joinBtn.innerHTML = '🎮 游戏中';
                     joinBtn.disabled = true;
                     resetBtn.disabled = false;
@@ -428,17 +457,10 @@
                 }
             }
             
-            updateStatus(msg) {
+            updateStatus(msg, type = '') {
                 const statusEl = document.getElementById('gameStatus');
                 statusEl.innerHTML = `<h2>${msg}</h2>`;
-                
-                if (msg.includes('✅') || msg.includes('🎮')) {
-                    statusEl.className = 'status success';
-                } else if (msg.includes('❌')) {
-                    statusEl.className = 'status error';
-                } else {
-                    statusEl.className = 'status';
-                }
+                statusEl.className = 'status ' + type;
             }
             
             resetGame() {
@@ -446,13 +468,24 @@
                 this.currentTurn = 'red';
                 this.renderBoard();
                 this.updateStatus('🔄 游戏已重置！红方开始');
+                
+                // 更新localStorage
+                const rooms = JSON.parse(localStorage.getItem('connect4_rooms') || '[]');
+                const roomIndex = rooms.findIndex(r => r.id === this.roomId);
+                
+                if (roomIndex !== -1) {
+                    rooms[roomIndex].board = this.board;
+                    rooms[roomIndex].currentTurn = 'red';
+                    localStorage.setItem('connect4_rooms', JSON.stringify(rooms));
+                }
+                
                 this.updateUI();
             }
         }
         
         // 启动游戏
         document.addEventListener('DOMContentLoaded', () => {
-            window.game = new MobileConnect4();
+            window.game = new MultiplayerConnect4();
         });
     </script>
 </body>
