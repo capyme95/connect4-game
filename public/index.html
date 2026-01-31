@@ -3,280 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connect 4 Game 🐹</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Connect 4 🎮</title>
+    <link rel="stylesheet" href="style-simple.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto+Slab:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <header class="game-header">
-            <div class="logo">
-                <i class="fas fa-gamepad"></i>
-                <h1>Connect <span class="four">4</span> Game</h1>
-            </div>
-            <div class="header-info">
-                <div class="player-count">
-                    <i class="fas fa-users"></i>
-                    <span id="playerCount">0</span> players online
-                </div>
-                <div class="capybara-badge">
-                    <i class="fas fa-paw"></i>
-                    <span>By CapybaraBot</span>
-                </div>
+        <!-- 简洁的头部 -->
+        <header class="simple-header">
+            <h1><i class="fas fa-gamepad"></i> Connect 4</h1>
+            <div class="player-status" id="playerStatus">
+                <span class="status-dot"></span>
+                <span>Connecting...</span>
             </div>
         </header>
 
-        <main class="game-container">
-            <div class="game-sidebar">
-                <div class="game-info">
-                    <h2><i class="fas fa-info-circle"></i> Game Info</h2>
-                    
-                    <div class="player-status">
-                        <div class="status-card">
-                            <h3>Your Color</h3>
-                            <div class="color-indicator" id="playerColor">
-                                <div class="color-dot spectator"></div>
-                                <span>Spectator</span>
-                            </div>
-                        </div>
-                        
-                        <div class="status-card">
-                            <h3>Current Turn</h3>
-                            <div class="color-indicator" id="currentTurn">
-                                <div class="color-dot red"></div>
-                                <span>Red</span>
-                            </div>
-                        </div>
-                    </div>
+        <!-- 主游戏区域 -->
+        <main class="game-main">
+            <!-- 游戏状态显示 -->
+            <div class="game-status" id="gameStatus">
+                <h2>Welcome to Connect 4!</h2>
+                <p>Click "Join Game" to start playing</p>
+            </div>
 
-                    <div class="game-instructions">
-                        <h3><i class="fas fa-graduation-cap"></i> How to Play</h3>
-                        <ul>
-                            <li>Two players: <span class="red-text">Red</span> and <span class="yellow-text">Yellow</span></li>
-                            <li>Take turns dropping discs into columns</li>
-                            <li>Connect 4 discs vertically, horizontally, or diagonally</li>
-                            <li>First to connect 4 wins!</li>
-                        </ul>
-                    </div>
+            <!-- 游戏控制按钮 -->
+            <div class="game-controls">
+                <button id="joinGameBtn" class="btn btn-primary">
+                    <i class="fas fa-play"></i> Join Game
+                </button>
+                <button id="resetGameBtn" class="btn btn-secondary" disabled>
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+            </div>
 
-                    <div class="game-controls">
-                        <button id="resetBtn" class="btn btn-reset">
-                            <i class="fas fa-redo"></i> Reset Game
-                        </button>
-                        <button id="howToPlayBtn" class="btn btn-help">
-                            <i class="fas fa-question-circle"></i> How to Play
-                        </button>
+            <!-- 游戏棋盘 -->
+            <div class="game-board-container">
+                <div class="board-header">
+                    <div class="current-player" id="currentPlayer">
+                        <span class="player-dot red"></span>
+                        <span>Red's Turn</span>
+                    </div>
+                    <div class="room-info" id="roomInfo">
+                        Room: <span id="roomId">-</span>
                     </div>
                 </div>
+                
+                <div class="game-board" id="gameBoard">
+                    <!-- 棋盘由JavaScript动态生成 -->
+                </div>
 
-                <div class="chat-box">
-                    <h3><i class="fas fa-comments"></i> Game Chat</h3>
-                    <div class="chat-messages" id="chatMessages">
-                        <div class="chat-message system">
-                            <span class="timestamp">[00:00]</span>
-                            <span class="message">Welcome to Connect 4! Waiting for players...</span>
+                <div class="board-footer">
+                    <div class="player-info">
+                        <div class="player red-player">
+                            <span class="player-dot red"></span>
+                            <span>You: <span id="redPlayer">-</span></span>
                         </div>
-                    </div>
-                    <div class="chat-input">
-                        <input type="text" id="chatInput" placeholder="Type a message...">
-                        <button id="sendChatBtn">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
+                        <div class="player yellow-player">
+                            <span class="player-dot yellow"></span>
+                            <span>Opponent: <span id="yellowPlayer">-</span></span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="game-main">
-                <div class="game-board-container">
-                    <div class="game-status" id="gameStatus">
-                        <div class="status-message">
-                            <i class="fas fa-hourglass-start"></i>
-                            <span>Waiting for players to join...</span>
-                        </div>
-                    </div>
-
-                    <div class="board-wrapper">
-                        <!-- Column indicators -->
-                        <div class="column-indicators">
-                            <div class="column-indicator" data-col="0">1</div>
-                            <div class="column-indicator" data-col="1">2</div>
-                            <div class="column-indicator" data-col="2">3</div>
-                            <div class="column-indicator" data-col="3">4</div>
-                            <div class="column-indicator" data-col="4">5</div>
-                            <div class="column-indicator" data-col="5">6</div>
-                            <div class="column-indicator" data-col="6">7</div>
-                        </div>
-
-                        <!-- Game board -->
-                        <div class="game-board" id="gameBoard">
-                            <!-- Board will be generated by JavaScript -->
-                        </div>
-
-                        <!-- Column hover indicators -->
-                        <div class="column-hover" id="columnHover">
-                            <!-- Hover indicators will be generated by JavaScript -->
-                        </div>
-                    </div>
-
-                    <div class="board-controls">
-                        <div class="score-board">
-                            <div class="score red-score">
-                                <div class="score-color red"></div>
-                                <span class="score-label">Red</span>
-                                <span class="score-value" id="redScore">0</span>
-                            </div>
-                            <div class="score yellow-score">
-                                <div class="score-color yellow"></div>
-                                <span class="score-label">Yellow</span>
-                                <span class="score-value" id="yellowScore">0</span>
-                            </div>
-                        </div>
-                        
-                        <div class="turn-indicator">
-                            <div class="turn-dot" id="turnDot"></div>
-                            <span id="turnText">Red's Turn</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="player-list">
-                    <h3><i class="fas fa-user-friends"></i> Players</h3>
-                    <div class="players" id="playersList">
-                        <div class="player spectator">
-                            <div class="player-color spectator"></div>
-                            <span class="player-name">You (Spectator)</span>
-                            <i class="fas fa-eye player-icon"></i>
-                        </div>
-                    </div>
+            <!-- 简单的消息显示 -->
+            <div class="simple-messages" id="simpleMessages">
+                <div class="message system">
+                    <span>System: Welcome! Join a game to start playing.</span>
                 </div>
             </div>
         </main>
 
-        <footer class="game-footer">
-            <div class="footer-content">
-                <div class="footer-links">
-                    <a href="#" class="footer-link"><i class="fas fa-code"></i> Source Code</a>
-                    <a href="#" class="footer-link"><i class="fas fa-bug"></i> Report Bug</a>
-                    <a href="#" class="footer-link"><i class="fas fa-star"></i> Rate Game</a>
-                </div>
-                <div class="footer-info">
-                    <p>Built with <i class="fas fa-heart" style="color: #e74c3c;"></i> by CapybaraBot 🐹</p>
-                    <p class="footer-sub">Node.js • Express • Socket.io • HTML5 • CSS3</p>
-                </div>
-                <div class="connection-status">
-                    <div class="status-indicator connected" id="connectionStatus">
-                        <div class="status-dot"></div>
-                        <span>Connected</span>
-                    </div>
-                </div>
-            </div>
+        <!-- 极简页脚 -->
+        <footer class="simple-footer">
+            <p>Connect 4 Game • Built with ❤️</p>
         </footer>
     </div>
 
-    <!-- How to Play Modal -->
-    <div class="modal" id="howToPlayModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2><i class="fas fa-graduation-cap"></i> How to Play Connect 4</h2>
-                <button class="modal-close" id="closeModalBtn">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="rules-section">
-                    <h3><i class="fas fa-chess-board"></i> Game Rules</h3>
-                    <p>Connect 4 is a two-player connection game in which the players take turns dropping colored discs into a seven-column, six-row vertically suspended grid.</p>
-                    
-                    <div class="rule-item">
-                        <div class="rule-icon">
-                            <i class="fas fa-user-friends"></i>
-                        </div>
-                        <div class="rule-text">
-                            <h4>Players</h4>
-                            <p>Two players: <strong class="red-text">Red</strong> and <strong class="yellow-text">Yellow</strong></p>
-                        </div>
-                    </div>
-                    
-                    <div class="rule-item">
-                        <div class="rule-icon">
-                            <i class="fas fa-arrow-down"></i>
-                        </div>
-                        <div class="rule-text">
-                            <h4>Taking Turns</h4>
-                            <p>Players alternate turns, dropping one disc per turn into any column that isn't full</p>
-                        </div>
-                    </div>
-                    
-                    <div class="rule-item">
-                        <div class="rule-icon">
-                            <i class="fas fa-trophy"></i>
-                        </div>
-                        <div class="rule-text">
-                            <h4>Winning</h4>
-                            <p>The first player to connect four of their discs horizontally, vertically, or diagonally wins</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="tips-section">
-                    <h3><i class="fas fa-lightbulb"></i> Pro Tips</h3>
-                    <ul>
-                        <li>Control the center columns - they offer more winning opportunities</li>
-                        <li>Watch for your opponent's potential winning moves</li>
-                        <li>Create multiple threats at once to force a win</li>
-                        <li>Don't forget about diagonal connections!</li>
-                    </ul>
-                </div>
-                
-                <div class="controls-section">
-                    <h3><i class="fas fa-gamepad"></i> Controls</h3>
-                    <div class="controls-grid">
-                        <div class="control-item">
-                            <div class="control-icon">
-                                <i class="fas fa-mouse-pointer"></i>
-                            </div>
-                            <p><strong>Click</strong> on a column to drop your disc</p>
-                        </div>
-                        <div class="control-item">
-                            <div class="control-icon">
-                                <i class="fas fa-mobile-alt"></i>
-                            </div>
-                            <p><strong>Tap</strong> on mobile devices</p>
-                        </div>
-                        <div class="control-item">
-                            <div class="control-icon">
-                                <i class="fas fa-redo"></i>
-                            </div>
-                            <p><strong>Reset</strong> button starts a new game</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" id="startPlayingBtn">
-                    <i class="fas fa-play"></i> Start Playing!
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Win Animation -->
-    <div class="win-animation" id="winAnimation">
-        <div class="confetti"></div>
-        <div class="confetti"></div>
-        <div class="confetti"></div>
-        <div class="confetti"></div>
-        <div class="confetti"></div>
-        <div class="win-message">
-            <h2 id="winMessage">Red Wins!</h2>
-            <p>Congratulations! 🎉</p>
-            <button class="btn btn-play-again" id="playAgainBtn">
-                <i class="fas fa-redo"></i> Play Again
-            </button>
-        </div>
-    </div>
-
-    <!-- Supabase client library -->
+    <!-- 加载Supabase客户端 -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script src="game-supabase.js"></script>
+    <!-- 简化版游戏逻辑 -->
+    <script src="game-simple-complete.js"></script>
 </body>
 </html>
