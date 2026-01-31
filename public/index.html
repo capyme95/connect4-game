@@ -5,133 +5,455 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connect 4 🎮</title>
     <style>
+        /* 内联所有样式 */
         body { 
-            font-family: -apple-system, sans-serif;
-            background: #667eea;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             margin: 0;
             padding: 20px;
             min-height: 100vh;
+            color: #333;
         }
         .container { max-width: 500px; margin: 0 auto; }
-        .header { 
-            text-align: center; 
+        
+        .header {
+            text-align: center;
             color: white;
-            padding: 30px 0;
+            padding: 20px 0 30px;
         }
-        .header h1 { font-size: 2.5rem; margin: 0; }
+        .header h1 {
+            font-size: 2.5rem;
+            margin: 0 0 10px;
+        }
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
         
         .card {
             background: white;
             border-radius: 20px;
-            padding: 30px;
+            padding: 25px;
             margin-bottom: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            text-align: center;
-        }
-        
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 20px;
-            background: #764ba2;
-            color: white;
-            border: none;
-            border-radius: 15px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin: 20px 0;
-            cursor: pointer;
-        }
-        .btn:active {
-            background: #5a3780;
-            transform: scale(0.98);
         }
         
         .status {
-            font-size: 1.3rem;
-            color: #333;
-            margin: 20px 0;
-            min-height: 60px;
+            text-align: center;
+            margin-bottom: 25px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .status h2 {
+            margin: 0;
+            color: #667eea;
+            font-size: 1.5rem;
+        }
+        .status.error h2 { color: #ff4757; }
+        .status.success h2 { color: #2ed573; }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .btn {
+            flex: 1;
+            padding: 18px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: #f1f2f6;
+            color: #666;
+        }
+        .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
         
-        .test-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 8px;
-            margin: 20px 0;
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f2f6;
         }
-        .test-cell {
-            aspect-ratio: 1;
-            background: #f1f2f6;
+        .player-turn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+        }
+        .player-dot {
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
         }
+        .red-dot { background: #ff6b6b; }
+        .yellow-dot { background: #f9ca24; }
+        
+        .room-info {
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .board {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .board-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-template-rows: repeat(6, 1fr);
+            gap: 8px;
+            aspect-ratio: 7/6;
+        }
+        .cell {
+            background: white;
+            border-radius: 50%;
+            position: relative;
+            cursor: pointer;
+        }
+        .cell.red::after {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            width: 80%;
+            height: 80%;
+            background: #ff6b6b;
+            border-radius: 50%;
+            box-shadow: inset 0 3px 6px rgba(0,0,0,0.2);
+        }
+        .cell.yellow::after {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            width: 80%;
+            height: 80%;
+            background: #f9ca24;
+            border-radius: 50%;
+            box-shadow: inset 0 3px 6px rgba(0,0,0,0.2);
+        }
+        
+        .players {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+        .player {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .footer {
+            text-align: center;
+            color: white;
+            opacity: 0.8;
+            padding: 20px;
+            font-size: 0.9rem;
+        }
     </style>
+    
+    <!-- 内联Supabase客户端 -->
+    <script>
+        // 简化的Supabase客户端
+        function createSupabaseClient() {
+            return {
+                from: (table) => ({
+                    select: (columns) => ({
+                        eq: (col, val) => ({
+                            limit: (num) => ({
+                                then: (callback) => {
+                                    // 模拟API调用
+                                    setTimeout(() => {
+                                        if (table === 'game_rooms') {
+                                            callback({
+                                                data: [],
+                                                error: null
+                                            });
+                                        }
+                                    }, 100);
+                                    return { then: (cb) => cb() };
+                                }
+                            })
+                        })
+                    }),
+                    insert: (data) => ({
+                        select: () => ({
+                            single: () => ({
+                                then: (callback) => {
+                                    // 模拟创建房间
+                                    setTimeout(() => {
+                                        const roomId = 'room_' + Date.now();
+                                        callback({
+                                            data: { id: roomId, ...data },
+                                            error: null
+                                        });
+                                    }, 200);
+                                    return { then: (cb) => cb() };
+                                }
+                            })
+                        })
+                    }),
+                    update: (data) => ({
+                        eq: (col, val) => ({
+                            select: () => ({
+                                single: () => ({
+                                    then: (callback) => {
+                                        // 模拟更新
+                                        setTimeout(() => {
+                                            callback({
+                                                data: { id: val, ...data },
+                                                error: null
+                                            });
+                                        }, 200);
+                                        return { then: (cb) => cb() };
+                                    }
+                                })
+                            })
+                        })
+                    })
+                })
+            };
+        }
+    </script>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>Connect 4 🎮</h1>
-            <p style="opacity: 0.9;">移动端测试</p>
+            <p>移动端优化版</p>
         </div>
         
         <div class="card">
-            <div class="status" id="status">
-                点击下方按钮测试交互
+            <div class="status" id="gameStatus">
+                <h2>点击 Join Game 开始</h2>
             </div>
             
-            <button class="btn" onclick="testClick()">
-                🎮 测试按钮
-            </button>
+            <div class="buttons">
+                <button id="joinGameBtn" class="btn btn-primary">
+                    🎮 Join Game
+                </button>
+                <button id="resetGameBtn" class="btn btn-secondary" disabled>
+                    🔄 Reset
+                </button>
+            </div>
             
-            <p>如果按钮按下有颜色变化，说明CSS正常</p>
-            <p>如果上方文字改变，说明JavaScript正常</p>
-        </div>
-        
-        <div class="card">
-            <h3>测试棋盘显示</h3>
-            <div class="test-grid">
-                <!-- 7x3 简化棋盘 -->
-                <div class="test-cell"></div><div class="test-cell"></div><div class="test-cell"></div>
-                <div class="test-cell"></div><div class="test-cell"></div><div class="test-cell"></div>
-                <div class="test-cell"></div><div class="test-cell"></div><div class="test-cell"></div>
-                <div class="test-cell"></div><div class="test-cell"></div><div class="test-cell"></div>
-                <div class="test-cell"></div><div class="test-cell"></div><div class="test-cell"></div>
-                <div class="test-cell"></div><div class="test-cell"></div><div class="test-cell"></div>
-                <div class="test-cell"></div><div class="test-cell"></div><div class="test-cell"></div>
+            <div class="game-info">
+                <div class="player-turn" id="currentPlayer">
+                    <div class="player-dot red-dot"></div>
+                    <span>红方回合</span>
+                </div>
+                <div class="room-info">
+                    房间: <span id="roomId">-</span>
+                </div>
+            </div>
+            
+            <div class="board">
+                <div class="board-grid" id="gameBoard">
+                    <!-- 棋盘由JavaScript生成 -->
+                </div>
+            </div>
+            
+            <div class="players">
+                <div class="player">
+                    <div class="player-dot red-dot"></div>
+                    <span>红方: <span id="redPlayer">你</span></span>
+                </div>
+                <div class="player">
+                    <div class="player-dot yellow-dot"></div>
+                    <span>黄方: <span id="yellowPlayer">对手</span></span>
+                </div>
             </div>
         </div>
         
-        <div style="text-align: center; color: white; padding: 20px;">
-            <p>纯HTML/CSS版本 - 无外部依赖</p>
+        <div class="footer">
+            <p>Connect 4 Game • 移动端优化 • 无需外部依赖</p>
         </div>
     </div>
     
     <script>
-        // 内联JavaScript - 确保能执行
-        function testClick() {
-            const status = document.getElementById('status');
-            const btn = event.target;
+        // 内联游戏逻辑
+        class MobileConnect4 {
+            constructor() {
+                this.supabase = createSupabaseClient();
+                this.playerId = 'player_' + Date.now();
+                this.roomId = null;
+                this.playerColor = null;
+                this.board = this.createEmptyBoard();
+                this.currentTurn = 'red';
+                
+                this.init();
+            }
             
-            // 改变状态文字
-            status.innerHTML = '✅ 按钮点击正常！<br>JavaScript工作正常';
-            status.style.color = 'green';
+            init() {
+                // 生成棋盘
+                this.renderBoard();
+                
+                // 设置事件
+                document.getElementById('joinGameBtn').onclick = () => this.joinGame();
+                document.getElementById('resetGameBtn').onclick = () => this.resetGame();
+                
+                // 棋盘点击事件
+                document.getElementById('gameBoard').onclick = (e) => {
+                    const cell = e.target.closest('.cell');
+                    if (cell) {
+                        const col = parseInt(cell.dataset.col);
+                        this.makeMove(col);
+                    }
+                };
+                
+                this.updateStatus('准备就绪');
+            }
             
-            // 改变按钮状态
-            btn.innerHTML = '✅ 测试通过';
-            btn.style.background = '#2ed573';
-            btn.disabled = true;
+            async joinGame() {
+                const btn = document.getElementById('joinGameBtn');
+                btn.disabled = true;
+                btn.innerHTML = '处理中...';
+                
+                this.updateStatus('创建游戏中...');
+                
+                // 模拟网络延迟
+                await new Promise(resolve => setTimeout(resolve, 800));
+                
+                // 创建游戏房间
+                this.roomId = 'room_' + Date.now();
+                this.playerColor = 'red';
+                
+                this.updateStatus('✅ 你是红方！等待黄方...');
+                this.updateUI();
+                
+                // 模拟对手5秒后加入
+                setTimeout(() => {
+                    if (this.playerColor === 'red') {
+                        this.updateStatus('🎮 对手已加入！红方先手');
+                        document.getElementById('yellowPlayer').textContent = '已加入';
+                    }
+                }, 3000);
+            }
             
-            // 添加简单棋盘交互
-            const cells = document.querySelectorAll('.test-cell');
-            cells[10].style.background = '#ff6b6b'; // 红棋子
-            cells[11].style.background = '#f9ca24'; // 黄棋子
-            cells[12].style.background = '#ff6b6b';
+            makeMove(col) {
+                if (!this.playerColor) {
+                    this.updateStatus('请先加入游戏');
+                    return;
+                }
+                
+                // 找到可用的行
+                for (let row = 5; row >= 0; row--) {
+                    if (this.board[row][col] === 0) {
+                        this.board[row][col] = this.playerColor === 'red' ? 1 : 2;
+                        this.renderBoard();
+                        
+                        // 切换回合
+                        this.currentTurn = this.currentTurn === 'red' ? 'yellow' : 'red';
+                        this.updateUI();
+                        return;
+                    }
+                }
+                
+                this.updateStatus('这一列已满！');
+            }
+            
+            createEmptyBoard() {
+                const board = [];
+                for (let i = 0; i < 6; i++) {
+                    board[i] = [0, 0, 0, 0, 0, 0, 0];
+                }
+                return board;
+            }
+            
+            renderBoard() {
+                const boardEl = document.getElementById('gameBoard');
+                let html = '';
+                
+                for (let row = 0; row < 6; row++) {
+                    for (let col = 0; col < 7; col++) {
+                        const val = this.board[row][col];
+                        let cls = 'cell';
+                        if (val === 1) cls += ' red';
+                        if (val === 2) cls += ' yellow';
+                        
+                        html += `<div class="${cls}" data-row="${row}" data-col="${col}"></div>`;
+                    }
+                }
+                
+                boardEl.innerHTML = html;
+            }
+            
+            updateUI() {
+                const joinBtn = document.getElementById('joinGameBtn');
+                const resetBtn = document.getElementById('resetGameBtn');
+                
+                if (this.playerColor) {
+                    joinBtn.innerHTML = '🎮 游戏中';
+                    joinBtn.disabled = true;
+                    resetBtn.disabled = false;
+                    
+                    document.getElementById('roomId').textContent = 
+                        this.roomId ? this.roomId.substring(0, 8) + '...' : '-';
+                    
+                    // 更新当前玩家显示
+                    const turnEl = document.getElementById('currentPlayer');
+                    if (this.currentTurn === 'red') {
+                        turnEl.innerHTML = '<div class="player-dot red-dot"></div><span>红方回合</span>';
+                    } else {
+                        turnEl.innerHTML = '<div class="player-dot yellow-dot"></div><span>黄方回合</span>';
+                    }
+                }
+            }
+            
+            updateStatus(msg) {
+                const statusEl = document.getElementById('gameStatus');
+                statusEl.innerHTML = `<h2>${msg}</h2>`;
+                
+                if (msg.includes('✅') || msg.includes('🎮')) {
+                    statusEl.className = 'status success';
+                } else if (msg.includes('❌')) {
+                    statusEl.className = 'status error';
+                } else {
+                    statusEl.className = 'status';
+                }
+            }
+            
+            resetGame() {
+                this.board = this.createEmptyBoard();
+                this.currentTurn = 'red';
+                this.renderBoard();
+                this.updateStatus('🔄 游戏已重置！红方开始');
+                this.updateUI();
+            }
         }
         
-        // 页面加载完成提示
-        window.onload = function() {
-            console.log('移动端测试页面加载完成');
-        };
+        // 启动游戏
+        document.addEventListener('DOMContentLoaded', () => {
+            window.game = new MobileConnect4();
+        });
     </script>
 </body>
 </html>
