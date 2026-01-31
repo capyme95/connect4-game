@@ -1,0 +1,40 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server-supabase.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/server-supabase.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1"
+    },
+    {
+      "src": "/",
+      "dest": "/public/index.html",
+      "headers": {
+        "Cache-Control": "public, max-age=0, must-revalidate"
+      }
+    },
+    {
+      "src": "/health",
+      "dest": "/server-supabase.js"
+    }
+  ],
+  "env": {
+    "SUPABASE_URL": "https://ffbqmickfvdnywjmnblo.supabase.co",
+    "SUPABASE_ANON_KEY": "sb_publishable_B2DZvbChkjt834lzGM2EzQ_NUlZkqVE",
+    "SUPABASE_SERVICE_ROLE_KEY": "sb_secret_NBjFMoB2-Ml-4Dq6YS6b4g_FsYbZ_9s",
+    "NODE_ENV": "production"
+  }
+}
