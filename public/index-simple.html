@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect 4 🎮</title>
+    <link rel="stylesheet" href="style-simple.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 简洁的头部 -->
+        <header class="simple-header">
+            <h1><i class="fas fa-gamepad"></i> Connect 4</h1>
+            <div class="player-status" id="playerStatus">
+                <span class="status-dot"></span>
+                <span>Connecting...</span>
+            </div>
+        </header>
+
+        <!-- 主游戏区域 -->
+        <main class="game-main">
+            <!-- 游戏状态显示 -->
+            <div class="game-status" id="gameStatus">
+                <h2>Welcome to Connect 4!</h2>
+                <p>Click "Join Game" to start playing</p>
+            </div>
+
+            <!-- 游戏控制按钮 -->
+            <div class="game-controls">
+                <button id="joinGameBtn" class="btn btn-primary">
+                    <i class="fas fa-play"></i> Join Game
+                </button>
+                <button id="resetGameBtn" class="btn btn-secondary" disabled>
+                    <i class="fas fa-redo"></i> Reset
+                </button>
+            </div>
+
+            <!-- 游戏棋盘 -->
+            <div class="game-board-container">
+                <div class="board-header">
+                    <div class="current-player" id="currentPlayer">
+                        <span class="player-dot red"></span>
+                        <span>Red's Turn</span>
+                    </div>
+                    <div class="room-info" id="roomInfo">
+                        Room: <span id="roomId">-</span>
+                    </div>
+                </div>
+                
+                <div class="game-board" id="gameBoard">
+                    <!-- 棋盘由JavaScript动态生成 -->
+                </div>
+
+                <div class="board-footer">
+                    <div class="player-info">
+                        <div class="player red-player">
+                            <span class="player-dot red"></span>
+                            <span>You: <span id="redPlayer">-</span></span>
+                        </div>
+                        <div class="player yellow-player">
+                            <span class="player-dot yellow"></span>
+                            <span>Opponent: <span id="yellowPlayer">-</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 简单的消息显示 -->
+            <div class="simple-messages" id="simpleMessages">
+                <div class="message system">
+                    <span>System: Welcome! Join a game to start playing.</span>
+                </div>
+            </div>
+        </main>
+
+        <!-- 极简页脚 -->
+        <footer class="simple-footer">
+            <p>Connect 4 Game • Built with ❤️</p>
+        </footer>
+    </div>
+
+    <!-- 加载Supabase客户端 -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <!-- 简化版游戏逻辑 -->
+    <script src="game-simple-complete.js"></script>
+</body>
+</html>
